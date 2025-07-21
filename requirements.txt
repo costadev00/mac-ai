@@ -1,7 +1,2 @@
 fastapi
 uvicorn[standard]
-openai
-langchain
-psycopg2-binary
-pgvector
-python-dotenv
