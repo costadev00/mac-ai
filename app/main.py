@@ -65,3 +65,11 @@ def perguntar(req: QuestionRequest):
     sql, rows = run_user_query(req.pergunta)
     resposta = make_human_answer(req.pergunta, rows, sql)
     return {"resposta": resposta, "sql": sql, "linhas": rows}
+=======
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "Hello, world!"}
