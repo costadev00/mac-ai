@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  db:
+    image: pgvector/pgvector:pg15
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+  app:
+    build: .
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/appdb
+      - READONLY_DATABASE_URL=postgresql://readonly:readonlypass@db:5432/appdb
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+volumes:
+  db_data:
