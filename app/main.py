@@ -1,14 +1,18 @@
 import os
+import logging
+import structlog
 from fastapi import FastAPI, HTTPException
 from .db import (
     get_db_connection,
     create_schema_index_table,
     load_schema_embeddings,
-    search_schema,
-    execute_select,
 )
-from .agent import generate_sql
+from .sql_chain import run_user_query
 from .models import QuestionRequest, AnswerResponse
+
+os.makedirs("logs", exist_ok=True)
+logging.basicConfig(filename="logs/app.log", level=logging.INFO, format="%(message)s")
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
 
 app = FastAPI(title="Perguntas SQL")
 
@@ -22,20 +26,7 @@ def startup_event():
 
 @app.post("/perguntar", response_model=AnswerResponse)
 def perguntar(req: QuestionRequest):
-    question = req.pergunta
-    ro_url = os.getenv("READONLY_DATABASE_URL")
-    conn = get_db_connection(ro_url)
-    schema_context = search_schema(conn, question)
-    sql = generate_sql(question, schema_context)
-    if not sql.lower().startswith("select"):
-        conn.close()
-        raise HTTPException(400, "Consulta insegura gerada")
-    if "limit" not in sql.lower():
-        sql = sql.rstrip(";") + " LIMIT 100"
     try:
-        result = execute_select(conn, sql)
+        return run_user_query(req.pergunta)
     except Exception as e:
-        conn.close()
         raise HTTPException(400, str(e))
-    conn.close()
-    return {"sql": sql, "resultado": result}

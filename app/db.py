@@ -1,6 +1,5 @@
 import os
 import psycopg2
-from psycopg2.extras import RealDictCursor
 from typing import List, Dict
 from openai import OpenAI
 
@@ -107,6 +106,7 @@ def search_schema(conn, question: str, top_k: int = 5) -> str:
 
 
 def execute_select(conn, sql: str) -> List[Dict]:
-    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+    with conn.cursor() as cur:
         cur.execute(sql)
-        return cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
+        return [dict(zip(columns, row)) for row in cur.fetchall()]
