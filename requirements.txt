@@ -7,3 +7,5 @@ pgvector
 python-dotenv
 Babel
 inflect
+fdb
+
