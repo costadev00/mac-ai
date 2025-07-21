@@ -5,3 +5,7 @@ langchain
 psycopg2-binary
 pgvector
 python-dotenv
+Babel
+inflect
+fdb
+
