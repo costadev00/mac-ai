@@ -110,3 +110,12 @@ def execute_select(conn, sql: str) -> List[Dict]:
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute(sql)
         return cur.fetchall()
+
+
+def refresh_schema(conn):
+    """Recreate embeddings for the current database schema."""
+    create_schema_index_table(conn)
+    with conn.cursor() as cur:
+        cur.execute("TRUNCATE schema_index")
+    conn.commit()
+    load_schema_embeddings(conn)
